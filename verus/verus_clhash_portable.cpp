@@ -46,9 +46,9 @@
 //#include <x86intrin.h>
 //#include "arm_neon.h"
 
-#   include "SSE2NEON.h"
+#   include "sse2neon.h"
 //#include "softaesnc.h"
-typedef int32x4_t __m128i;
+// typedef int32x4_t __m128i;
 
 #endif //WIN32
 
@@ -273,7 +273,7 @@ __m128i _mm_shuffle_epi8_emu(__m128i a, __m128i b)
 // portable
 __m128i lazyLengthHash_port(uint64_t keylength, uint64_t length) {
 	const __m128i lengthvector = _mm_set_epi64x_emu(keylength, length);
-	const __m128i clprod1 = _mm_clmulepi64_si128_emu(lengthvector, lengthvector, 0x10);
+	const __m128i clprod1 = _mm_clmulepi64_si128(lengthvector, lengthvector, 0x10);
 	return clprod1;
 }
 
@@ -282,8 +282,8 @@ __m128i precompReduction64_si128_port(__m128i A) {
 
 	//const __m128i C = _mm_set_epi64x(1U,(1U<<4)+(1U<<3)+(1U<<1)+(1U<<0)); // C is the irreducible poly. (64,4,3,1,0)
 	const __m128i C = _mm_cvtsi64_si128_emu((1U << 4) + (1U << 3) + (1U << 1) + (1U << 0));
-	__m128i Q2 = _mm_clmulepi64_si128_emu(A, C, 0x01);
-	__m128i Q3 = _mm_shuffle_epi8_emu(_mm_setr_epi8_emu(0, 27, 54, 45, 108, 119, 90, 65, (char)216, (char)195, (char)238, (char)245, (char)180, (char)175, (char)130, (char)153),
+	__m128i Q2 = _mm_clmulepi64_si128(A, C, 0x01);
+	__m128i Q3 = _mm_shuffle_epi8(_mm_setr_epi8_emu(0, 27, 54, 45, 108, 119, 90, 65, (char)216, (char)195, (char)238, (char)245, (char)180, (char)175, (char)130, (char)153),
 		_mm_srli_si128_emu(Q2, 8));
 	__m128i Q4 = _mm_xor_si128_emu(Q2, A);
 	const __m128i final = _mm_xor_si128_emu(Q3, Q4);
@@ -295,10 +295,10 @@ uint64_t precompReduction64_port(__m128i A) {
 	return _mm_cvtsi128_si64_emu(tmp);
 }
 
-uint8x16_t _mm_aesenc_si128 (uint8x16_t a, uint8x16_t RoundKey)
-{
-    return vaesmcq_u8(vaeseq_u8(a, (uint8x16_t){})) ^ RoundKey;
-}
+//uint8x16_t _mm_aesenc_si128 (uint8x16_t a, uint8x16_t RoundKey)
+//{
+//    return vaesmcq_u8(vaeseq_u8(a, (uint8x16_t){})) ^ RoundKey;
+//}
 
 
 // verus intermediate hash extra
@@ -347,7 +347,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 			const __m128i temp1 = _mm_load_si128_emu(prandex);
 			const __m128i temp2 = _mm_load_si128_emu(pbuf - (((selector & 1) << 1) - 1));
 			const __m128i add1 = _mm_xor_si128_emu(temp1, temp2);
-			const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128_emu(clprod1, acc);
 
 			/*
@@ -366,7 +366,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 
 			const __m128i temp22 = _mm_load_si128_emu(pbuf);
 			const __m128i add12 = _mm_xor_si128_emu(temp12, temp22);
-			const __m128i clprod12 = _mm_clmulepi64_si128_emu(add12, add12, 0x10);
+			const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 			acc = _mm_xor_si128_emu(clprod12, acc);
 
 			const __m128i tempb1 = _mm_mulhrs_epi16_emu(acc, temp12);
@@ -379,9 +379,9 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 			const __m128i temp1 = _mm_load_si128_emu(prand);
 			const __m128i temp2 = _mm_load_si128_emu(pbuf);
 			const __m128i add1 = _mm_xor_si128_emu(temp1, temp2);
-			const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128_emu(clprod1, acc);
-			const __m128i clprod2 = _mm_clmulepi64_si128_emu(temp2, temp2, 0x10);
+			const __m128i clprod2 = _mm_clmulepi64_si128(temp2, temp2, 0x10);
 			acc = _mm_xor_si128_emu(clprod2, acc);
 
 			const __m128i tempa1 = _mm_mulhrs_epi16_emu(acc, temp1);
@@ -414,9 +414,9 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 
 			const __m128i temp22 = _mm_load_si128_emu(pbuf - (((selector & 1) << 1) - 1));
 			const __m128i add12 = _mm_xor_si128_emu(temp12, temp22);
-			const __m128i clprod12 = _mm_clmulepi64_si128_emu(add12, add12, 0x10);
+			const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 			acc = _mm_xor_si128_emu(clprod12, acc);
-			const __m128i clprod22 = _mm_clmulepi64_si128_emu(temp22, temp22, 0x10);
+			const __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
 			acc = _mm_xor_si128_emu(clprod22, acc);
 
 			const __m128i tempb1 = _mm_mulhrs_epi16_emu(acc, temp12);
@@ -449,9 +449,9 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 
 				const __m128i temp22 = _mm_load_si128_emu(pbuf);
 				const __m128i add12 = _mm_xor_si128_emu(temp12, temp22);
-				const __m128i clprod12 = _mm_clmulepi64_si128_emu(add12, add12, 0x10);
+				const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 				acc = _mm_xor_si128_emu(clprod12, acc);
-				const __m128i clprod22 = _mm_clmulepi64_si128_emu(temp22, temp22, 0x10);
+				const __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
 				acc = _mm_xor_si128_emu(clprod22, acc);
 
 				const __m128i tempb1 = _mm_mulhrs_epi16_emu(acc, temp12);
@@ -518,7 +518,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 					onekey = _mm_load_si128_emu(rc++);
 					const __m128i temp2 = _mm_load_si128_emu(rounds & 1 ? pbuf : buftmp);
 					const __m128i add1 = _mm_xor_si128_emu(onekey, temp2);
-					const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+					const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 					acc = _mm_xor_si128_emu(clprod1, acc);
 				}
 				else
@@ -599,7 +599,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
                         onekey = _mm_load_si128_emu(rc++);
                         __m128i temp2 = _mm_load_si128_emu(rounds & 1 ? buftmp : pbuf);
                         const __m128i add1 = _mm_xor_si128_emu(onekey, temp2);
-                        const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+                        const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
                         const __m128i clprod2 = _mm_mulhrs_epi16_emu(acc, clprod1);
                         acc = _mm_xor_si128_emu(clprod2, acc);
                     }
@@ -616,7 +616,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_1(__m128i *randomsourc
 			const __m128i temp1 = _mm_load_si128_emu(pbuf);
 			const __m128i temp2 = _mm_load_si128_emu(prandex);
 			const __m128i add1 = _mm_xor_si128_emu(temp1, temp2);
-			const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128_emu(clprod1, acc);
 
 			const __m128i tempa1 = _mm_mulhrs_epi16_emu(acc, temp2);
@@ -684,7 +684,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 			const __m128i temp1 = _mm_load_si128_emu(prandex);
 			const __m128i temp2 = _mm_load_si128_emu(pbuf - (((selector & 1) << 1) - 1));
 			const __m128i add1 = _mm_xor_si128_emu(temp1, temp2);
-			const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128_emu(clprod1, acc);
 
 			/*
@@ -703,7 +703,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 
 			const __m128i temp22 = _mm_load_si128_emu(pbuf);
 			const __m128i add12 = _mm_xor_si128_emu(temp12, temp22);
-			const __m128i clprod12 = _mm_clmulepi64_si128_emu(add12, add12, 0x10);
+			const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 			acc = _mm_xor_si128_emu(clprod12, acc);
 
 			const __m128i tempb1 = _mm_mulhrs_epi16_emu(acc, temp12);
@@ -716,9 +716,9 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 			const __m128i temp1 = _mm_load_si128_emu(prand);
 			const __m128i temp2 = _mm_load_si128_emu(pbuf);
 			const __m128i add1 = _mm_xor_si128_emu(temp1, temp2);
-			const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128_emu(clprod1, acc);
-			const __m128i clprod2 = _mm_clmulepi64_si128_emu(temp2, temp2, 0x10);
+			const __m128i clprod2 = _mm_clmulepi64_si128(temp2, temp2, 0x10);
 			acc = _mm_xor_si128_emu(clprod2, acc);
 
 			const __m128i tempa1 = _mm_mulhrs_epi16_emu(acc, temp1);
@@ -751,9 +751,9 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 
 			const __m128i temp22 = _mm_load_si128_emu(pbuf - (((selector & 1) << 1) - 1));
 			const __m128i add12 = _mm_xor_si128_emu(temp12, temp22);
-			const __m128i clprod12 = _mm_clmulepi64_si128_emu(add12, add12, 0x10);
+			const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 			acc = _mm_xor_si128_emu(clprod12, acc);
-			const __m128i clprod22 = _mm_clmulepi64_si128_emu(temp22, temp22, 0x10);
+			const __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
 			acc = _mm_xor_si128_emu(clprod22, acc);
 
 			const __m128i tempb1 = _mm_mulhrs_epi16_emu(acc, temp12);
@@ -786,9 +786,9 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 
 				const __m128i temp22 = _mm_load_si128_emu(pbuf);
 				const __m128i add12 = _mm_xor_si128_emu(temp12, temp22);
-				const __m128i clprod12 = _mm_clmulepi64_si128_emu(add12, add12, 0x10);
+				const __m128i clprod12 = _mm_clmulepi64_si128(add12, add12, 0x10);
 				acc = _mm_xor_si128_emu(clprod12, acc);
-				const __m128i clprod22 = _mm_clmulepi64_si128_emu(temp22, temp22, 0x10);
+				const __m128i clprod22 = _mm_clmulepi64_si128(temp22, temp22, 0x10);
 				acc = _mm_xor_si128_emu(clprod22, acc);
 
 				const __m128i tempb1 = _mm_mulhrs_epi16_emu(acc, temp12);
@@ -857,7 +857,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 					onekey = _mm_load_si128_emu(rc++);
 					const __m128i temp2 = _mm_load_si128_emu(rounds & 1 ? pbuf : buftmp);
 					const __m128i add1 = _mm_xor_si128_emu(onekey, temp2);
-					const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+					const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 					acc = _mm_xor_si128_emu(clprod1, acc);
 				}
 				else
@@ -938,7 +938,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
                         onekey = _mm_load_si128_emu(rc++);
                         __m128i temp2 = _mm_load_si128_emu(rounds & 1 ? buftmp : pbuf);
                         const __m128i add1 = _mm_xor_si128_emu(onekey, temp2);
-                        onekey = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+                        onekey = _mm_clmulepi64_si128(add1, add1, 0x10);
                         const __m128i clprod2 = _mm_mulhrs_epi16_emu(acc, onekey);
                         acc = _mm_xor_si128_emu(clprod2, acc);
                     }
@@ -956,7 +956,7 @@ __m128i __verusclmulwithoutreduction64alignedrepeat_port2_2(__m128i *randomsourc
 			const __m128i temp1 = _mm_load_si128_emu(pbuf);
 			const __m128i temp2 = _mm_load_si128_emu(prandex);
 			const __m128i add1 = _mm_xor_si128_emu(temp1, temp2);
-			const __m128i clprod1 = _mm_clmulepi64_si128_emu(add1, add1, 0x10);
+			const __m128i clprod1 = _mm_clmulepi64_si128(add1, add1, 0x10);
 			acc = _mm_xor_si128_emu(clprod1, acc);
 
 			const __m128i tempa1 = _mm_mulhrs_epi16_emu(acc, temp2);
